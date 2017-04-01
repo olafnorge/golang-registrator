@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/url"
 	"os"
-	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -16,6 +15,8 @@ import (
 )
 
 var serviceIDPattern = regexp.MustCompile(`^(.+?):([a-zA-Z0-9][a-zA-Z0-9_.-]+):[0-9]+(?::udp)?$`)
+
+var serviceNamePattern = regexp.MustCompile(`_[0-9]+$`)
 
 type Bridge struct {
 	sync.Mutex
@@ -256,7 +257,7 @@ func (b *Bridge) add(containerId string, quiet bool) {
 
 func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
 	container := port.container
-	defaultName := strings.Split(path.Base(container.Config.Image), ":")[0]
+	defaultName := strings.Replace(serviceNamePattern.ReplaceAllString(strings.TrimPrefix(container.Name, "/"), ""), "_", "-", -1)
 
 	// not sure about this logic. kind of want to remove it.
 	hostname := Hostname
