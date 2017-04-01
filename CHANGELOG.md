@@ -10,6 +10,22 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+## [v8] - 2017-04-01
+### Fixed
+
+### Added
+- Network awareness - only registers services on defined network (see -network parameter)
+
+### Removed
+- circle.yml
+- Makefile
+- mkdocs.yml
+
+### Changed
+- Build process, all relevant files for building registrator are now in a rootfs
+- Exchange alpine linux busybox with a minimalistic busybox on build time
+- Namespaces - adapted to new directory structure
+
 ## [v7] - 2016-03-05
 ### Fixed
 - Providing a SERVICE_NAME for a container with multiple ports exposed would cause services to overwrite each other

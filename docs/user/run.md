@@ -7,17 +7,22 @@ automation, running everywhere is ironically simpler than running once somewhere
 
 ## Running Registrator
 
-    docker run [docker options] gliderlabs/registrator[:tag] [options] <registry uri>
+    docker run [docker options] olafnorge/golang-registrator[:tag] [options] <registry uri>
 
 Registrator requires and recommends some Docker options, has its own set of options
 and then requires a Registry URI. Here is a typical way to run Registrator:
 
     $ docker run -d \
-        --name=registrator \
-        --net=host \
-        --volume=/var/run/docker.sock:/tmp/docker.sock \
-        gliderlabs/registrator:latest \
-          consul://localhost:8500
+            --cap-drop=all \
+            --name=registrator \
+            --read-only \
+            --security-opt=no-new-privileges \
+            --user="registrator:$(getent group docker | awk -F':' '{print $3}')" \
+            --volume=/etc/localtime:/etc/localtime:ro \
+            --volume=/etc/timezone:/etc/timezone:ro \
+            --volume=/var/run/docker.sock:/tmp/docker.sock \
+            olafnorge/golang-registrator:latest \
+            consul://localhost:8500
 
 ## Docker Options
 
@@ -74,12 +79,17 @@ or you will see warnings in the consul docker container
 The ACL token is passed in through docker in an environment variable called `CONSUL_HTTP_TOKEN`.
 
     $ docker run -d \
+        --cap-drop=all \
+        --environment CONSUL_HTTP_TOKEN=<your acl token> \
         --name=registrator \
-        --net=host \
+        --read-only \
+        --security-opt=no-new-privileges \
+        --user="registrator:$(getent group docker | awk -F':' '{print $3}')" \
+        --volume=/etc/localtime:/etc/localtime:ro \
+        --volume=/etc/timezone:/etc/timezone:ro \
         --volume=/var/run/docker.sock:/tmp/docker.sock \
-        -e CONSUL_HTTP_TOKEN=<your acl token> \
-        gliderlabs/registrator:latest \
-          consul://localhost:8500
+        olafnorge/golang-registrator:latest \
+        consul://localhost:8500
 
 ## Registry URI
 

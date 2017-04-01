@@ -42,11 +42,16 @@ Besides option flags, the only argument Registrator takes is a registry URI,
 which encodes what type of registry, how to connect to it, and any options.
 ```
 $ docker run -d \
-    --name=registrator \
-    --net=host \
-    --volume=/var/run/docker.sock:/tmp/docker.sock \
-    gliderlabs/registrator:latest \
-      consul://localhost:8500
+        --cap-drop=all \
+        --name=registrator \
+        --read-only \
+        --security-opt=no-new-privileges \
+        --user="registrator:$(getent group docker | awk -F':' '{print $3}')" \
+        --volume=/etc/localtime:/etc/localtime:ro \
+        --volume=/etc/timezone:/etc/timezone:ro \
+        --volume=/var/run/docker.sock:/tmp/docker.sock \
+        olafnorge/golang-registrator:latest \
+        consul://localhost:8500
 ```
 There's a bit going on here in the Docker run arguments. First, we run the
 container detached and name it. We also run in host network mode. This makes

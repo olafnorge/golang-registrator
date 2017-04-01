@@ -4,7 +4,7 @@ MAINTAINER Volker Machon <volker@machon.biz>
 COPY rootfs/ /
 
 # build and install registrator
-WORKDIR /go/src/github.com/gliderlabs/registrator
+WORKDIR /go/src/github.com/olafnorge/golang-registrator
 RUN apk add --no-cache --virtual .run-deps \
         ca-certificates \
     && apk add --no-cache --virtual .go-build-deps \

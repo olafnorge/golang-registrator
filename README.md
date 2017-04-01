@@ -1,12 +1,15 @@
 # Registrator
 
-Service registry bridge for Docker.
-
-[![Circle CI](https://circleci.com/gh/gliderlabs/registrator.png?style=shield)](https://circleci.com/gh/gliderlabs/registrator)
-[![Docker pulls](https://img.shields.io/docker/pulls/gliderlabs/registrator.svg)](https://hub.docker.com/r/gliderlabs/registrator/)
-[![IRC Channel](https://img.shields.io/badge/irc-%23gliderlabs-blue.svg)](https://kiwiirc.com/client/irc.freenode.net/#gliderlabs)
-<br /><br />
-
+Service registry bridge for Docker forked from [gliderlabs/registrator](https://github.com/gliderlabs/registrator).
+  
+[![GitHub release](https://img.shields.io/github/release/olafnorge/golang-registrator.svg)](https://hub.docker.com/r/olafnorge/golang-registrator/)
+[![Docker Automated buil](https://img.shields.io/docker/automated/olafnorge/golang-registrator.svg)](https://hub.docker.com/r/olafnorge/golang-registrator/)
+[![Docker Stars](https://img.shields.io/docker/stars/olafnorge/golang-registrator.svg)](https://hub.docker.com/r/olafnorge/golang-registrator/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/olafnorge/golang-registrator.svg)](https://hub.docker.com/r/olafnorge/golang-registrator/)
+[![license](https://img.shields.io/github/license/olafnorge/golang-registrator.svg)](https://hub.docker.com/r/olafnorge/golang-registrator/)
+  
+  
+  
 Registrator automatically registers and deregisters services for any Docker
 container by inspecting containers as they come online. Registrator
 supports pluggable service registries, which currently includes
@@ -17,9 +20,9 @@ Full documentation available at http://gliderlabs.com/registrator
 
 ## Getting Registrator
 
-Get the latest release, master, or any version of Registrator via [Docker Hub](https://registry.hub.docker.com/u/gliderlabs/registrator/):
+Get the latest release, master, or any version of Registrator via [Docker Hub](https://registry.hub.docker.com/u/olafnorge/golang-registrator/):
 
-	$ docker pull gliderlabs/registrator:latest
+	$ docker pull olafnorge/golang-registrator:latest
 
 Latest tag always points to the latest release. There is also a `:master` tag
 and version tags to pin to specific releases.
@@ -33,33 +36,22 @@ Reference](https://gliderlabs.com/registrator/latest/user/run) in the User
 Guide. Typically, running Registrator looks like this:
 
     $ docker run -d \
+        --cap-drop=all \
         --name=registrator \
-        --net=host \
+        --read-only \
+        --security-opt=no-new-privileges \
+        --user="registrator:$(getent group docker | awk -F':' '{print $3}')" \
+	    --volume=/etc/localtime:/etc/localtime:ro \
+	    --volume=/etc/timezone:/etc/timezone:ro \
         --volume=/var/run/docker.sock:/tmp/docker.sock \
-        gliderlabs/registrator:latest \
-          consul://localhost:8500
+        olafnorge/golang-registrator:latest \
+        consul://localhost:8500
 
 ## Contributing
 
 Pull requests are welcome! We recommend getting feedback before starting by
-opening a [GitHub issue](https://github.com/gliderlabs/registrator/issues) or
-discussing in [Slack](http://glider-slackin.herokuapp.com/).
-
-Also check out our Developer Guide on [Contributing
-Backends](https://gliderlabs.com/registrator/latest/dev/backends) and [Staging
-Releases](https://gliderlabs.com/registrator/latest/dev/releases).
-
-## Sponsors and Thanks
-
-Big thanks to Weave for sponsoring, Michael Crosby for
-[skydock](https://github.com/crosbymichael/skydock), and the Consul mailing list
-for inspiration.
-
-For a full list of sponsors, see
-[SPONSORS](https://github.com/gliderlabs/registrator/blob/master/SPONSORS).
+opening a [GitHub issue](https://github.com/olafnorge/golang-registrator/issues).
 
 ## License
 
-MIT
-
-<img src="https://ga-beacon.appspot.com/UA-58928488-2/registrator/readme?pixel" />
+[![license](https://img.shields.io/github/license/olafnorge/registrator.svg)](https://hub.docker.com/r/olafnorge/registrator/)
