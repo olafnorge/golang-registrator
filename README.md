@@ -54,4 +54,4 @@ opening a [GitHub issue](https://github.com/olafnorge/golang-registrator/issues)
 
 ## License
 
-[![license](https://img.shields.io/github/license/olafnorge/registrator.svg)](https://hub.docker.com/r/olafnorge/registrator/)
+[![license](https://img.shields.io/github/license/olafnorge/golang-registrator.svg)](https://hub.docker.com/r/olafnorge/golang-registrator/)
