@@ -133,7 +133,8 @@ func main() {
 	assert(docker.AddEventListener(events))
 	log.Println("Listening for Docker events ...")
 
-	b.Sync(false)
+	// do initial sync
+	b.Sync(true)
 
 	quit := make(chan struct{})
 
@@ -172,11 +173,9 @@ func main() {
 	// Process Docker events
 	for msg := range events {
 		switch msg.Status {
-		case "start":
-		case "unpause":
+		case "start", "unpause":
 			go b.Add(msg.ID)
-		case "die":
-		case "pause":
+		case "die", "pause":
 			go b.RemoveOnExit(msg.ID)
 		}
 	}

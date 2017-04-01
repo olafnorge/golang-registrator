@@ -14,7 +14,7 @@ import (
 	dockerapi "github.com/fsouza/go-dockerclient"
 )
 
-var serviceIDPattern = regexp.MustCompile(`^(.+?):([a-zA-Z0-9][a-zA-Z0-9_.-]+):[0-9]+(?::udp)?$`)
+var serviceIDPattern = regexp.MustCompile(`^([0-9a-z]+):([a-z-]+):([0-9]+):(tcp|udp)$`)
 
 var serviceNamePattern = regexp.MustCompile(`_[0-9]+$`)
 
@@ -122,7 +122,7 @@ func (b *Bridge) Sync(quiet bool) {
 	if b.config.Cleanup {
 		// Remove services if its corresponding container is not running
 		log.Println("Listing non-exited containers")
-		filters := map[string][]string{"status": {"created", "restarting", "running", "paused"}}
+		filters := map[string][]string{"status": {"restarting", "running"}}
 		nonExitedContainers, err := b.docker.ListContainers(dockerapi.ListContainersOptions{Filters: filters})
 		if err != nil {
 			log.Println("error listing nonExitedContainers, skipping sync", err)
@@ -150,33 +150,26 @@ func (b *Bridge) Sync(quiet bool) {
 			return
 		}
 
-	Outer:
 		for _, extService := range extServices {
 			matches := serviceIDPattern.FindStringSubmatch(extService.ID)
-			if len(matches) != 3 {
-				// There's no way this was registered by us, so leave it
+
+			// There's no way this was registered by us, so leave it
+			if len(matches) != 5 {
 				continue
 			}
-			serviceHostname := matches[1]
-			if serviceHostname != Hostname {
-				// ignore because registered on a different host
-				continue
-			}
-			serviceContainerName := matches[2]
-			for _, listing := range b.services {
-				for _, service := range listing {
-					if service.Name == extService.Name && serviceContainerName == service.Origin.container.Name[1:] {
-						continue Outer
-					}
-				}
-			}
-			log.Println("dangling:", extService.ID)
-			err := b.registry.Deregister(extService)
+
+			serviceContainerId := matches[1]
+			_, err := b.docker.InspectContainer(serviceContainerId)
+
 			if err != nil {
-				log.Println("deregister failed:", extService.ID, err)
-				continue
+				log.Println("dangling:", extService.ID)
+				err := b.registry.Deregister(extService)
+				if err != nil {
+					log.Println("deregister failed:", extService.ID, err)
+					continue
+				}
+				log.Println(extService.ID, "removed")
 			}
-			log.Println(extService.ID, "removed")
 		}
 	}
 }

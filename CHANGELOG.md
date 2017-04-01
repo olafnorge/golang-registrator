@@ -10,6 +10,19 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+## [8.0.1] - 2017-04.01
+### Fixed
+- ServiceID pattern to match pattern introduced in v8
+- Removal of dangling services
+
+### Added
+
+### Removed
+
+### Changed
+- Filter to fetch containers from docker container ls
+- Versioning pattern of registrator
+
 ## [v8] - 2017-04-01
 ### Fixed
 
