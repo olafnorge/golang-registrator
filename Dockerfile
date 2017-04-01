@@ -5,7 +5,8 @@ COPY rootfs/ /
 
 # build and install registrator
 WORKDIR /go/src/github.com/gliderlabs/registrator
-RUN apk add --no-cache --virtual .run-deps ca-certificates \
+RUN apk add --no-cache --virtual .run-deps \
+        ca-certificates \
     && apk add --no-cache --virtual .go-build-deps \
            build-base \
            git \
@@ -19,6 +20,7 @@ RUN apk add --no-cache --virtual .run-deps ca-certificates \
 
 # build and install minimalistic busybox
 ARG BUSY_BOX_VERSION=1.26.2
+WORKDIR /tmp
 RUN [ $(getent group registrator) ] || addgroup -S registrator \
     && [ $(getent passwd registrator) ] || adduser -S -D -G registrator registrator \
     && apk add --no-cache --virtual .busybox-build-deps \
@@ -27,10 +29,9 @@ RUN [ $(getent group registrator) ] || addgroup -S registrator \
         musl-dev \
         ncurses-dev \
         openssl \
-    && wget -O- "https://busybox.net/downloads/busybox-${BUSY_BOX_VERSION}.tar.bz2" > /tmp/busybox.tar.bz2 \
-    && cd /tmp \
+    && wget -O- "https://busybox.net/downloads/busybox-${BUSY_BOX_VERSION}.tar.bz2" > busybox.tar.bz2 \
     && tar xfj busybox.tar.bz2 \
-    && cd /tmp/busybox-${BUSY_BOX_VERSION} \
+    && cd busybox-${BUSY_BOX_VERSION} \
     && mv /busybox-config .config \
     && make \
     && for DEL_SYM_LINK in $(/bin/busybox find / -type l | /bin/busybox grep bin); do /bin/busybox rm ${DEL_SYM_LINK}; done \
