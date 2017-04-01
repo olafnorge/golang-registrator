@@ -25,6 +25,9 @@ All notable changes to this project will be documented in this file.
 - Build process, all relevant files for building registrator are now in a rootfs
 - Exchange alpine linux busybox with a minimalistic busybox on build time
 - Namespaces - adapted to new directory structure
+- Default name of service is taken from container name instead of image
+- Register services as <container.Id> + ":" + <service.Name> + ":" + <service.Port> + ":" + <service.PortProtocol>
+- Do not add UDP tags by default
 
 ## [v7] - 2016-03-05
 ### Fixed
