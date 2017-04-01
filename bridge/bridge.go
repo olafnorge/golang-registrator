@@ -203,12 +203,12 @@ func (b *Bridge) add(containerId string, quiet bool) {
 	// Extract configured host port mappings, relevant when using --net=host
 	for port, _ := range container.Config.ExposedPorts {
 		published := []dockerapi.PortBinding{ {"0.0.0.0", port.Port()}, }
-		ports[string(port)] = servicePort(container, port, published)
+		ports[string(port)] = servicePort(container, port, published, b.config.Network, quiet)
 	}
 
 	// Extract runtime port mappings, relevant when using --net=bridge
 	for port, published := range container.NetworkSettings.Ports {
-		ports[string(port)] = servicePort(container, port, published)
+		ports[string(port)] = servicePort(container, port, published, b.config.Network, quiet)
 	}
 
 	if len(ports) == 0 && !quiet {
@@ -218,6 +218,14 @@ func (b *Bridge) add(containerId string, quiet bool) {
 
 	servicePorts := make(map[string]ServicePort)
 	for key, port := range ports {
+		// If internal and can't evaluate the exposed IP (will happen on wrong network), ignore
+		if b.config.Internal == true && port.ExposedIP == "" {
+			if !quiet {
+				log.Println("ignored:", container.ID[:12], "internal IP not found on network", b.config.Network)
+			}
+			continue
+		}
+
 		if b.config.Internal != true && port.HostPort == "" {
 			if !quiet {
 				log.Println("ignored:", container.ID[:12], "port", port.ExposedPort, "not published on host")

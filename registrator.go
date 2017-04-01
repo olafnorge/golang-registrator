@@ -29,6 +29,7 @@ var deregister = flag.String("deregister", "always", "Deregister exited services
 var retryAttempts = flag.Int("retry-attempts", 0, "Max retry attempts to establish a connection with the backend. Use -1 for infinite retries")
 var retryInterval = flag.Int("retry-interval", 2000, "Interval (in millisecond) between retry-attempts.")
 var cleanup = flag.Bool("cleanup", false, "Remove dangling services")
+var network = flag.String("network", "bridge", "Network to use for registering exposed IPs")
 
 func getopt(name, def string) string {
 	if env := os.Getenv(name); env != "" {
@@ -105,6 +106,7 @@ func main() {
 		RefreshInterval: *refreshInterval,
 		DeregisterCheck: *deregister,
 		Cleanup:         *cleanup,
+		Network:	 *network,
 	})
 
 	assert(err)
@@ -171,8 +173,10 @@ func main() {
 	for msg := range events {
 		switch msg.Status {
 		case "start":
+		case "unpause":
 			go b.Add(msg.ID)
 		case "die":
+		case "pause":
 			go b.RemoveOnExit(msg.ID)
 		}
 	}

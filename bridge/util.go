@@ -6,6 +6,7 @@ import (
 
 	"github.com/cenkalti/backoff"
 	dockerapi "github.com/fsouza/go-dockerclient"
+	"log"
 )
 
 func retry(fn func() error) error {
@@ -84,7 +85,7 @@ func serviceMetaData(config *dockerapi.Config, port string) (map[string]string, 
 	return metadata, metadataFromPort
 }
 
-func servicePort(container *dockerapi.Container, port dockerapi.Port, published []dockerapi.PortBinding) ServicePort {
+func servicePort(container *dockerapi.Container, port dockerapi.Port, published []dockerapi.PortBinding, network string, quiet bool) ServicePort {
 	var hp, hip, ep, ept, eip, nm string
 	if len(published) > 0 {
 		hp = published[0].HostPort
@@ -110,11 +111,23 @@ func servicePort(container *dockerapi.Container, port dockerapi.Port, published 
 		ept = "tcp" // default
 	}
 
-	// Nir: support docker NetworkSettings
-	eip = container.NetworkSettings.IPAddress
-	if eip == "" {
-		for _, network := range container.NetworkSettings.Networks {
-			eip = network.IPAddress
+	// get IP from container if the container's network is irrelevant
+	if network == "" {
+		// Nir: support docker NetworkSettings
+		eip = container.NetworkSettings.IPAddress
+		if eip == "" {
+			for _, network := range container.NetworkSettings.Networks {
+				eip = network.IPAddress
+			}
+		}
+	} else {
+		eip = container.NetworkSettings.Networks[network].IPAddress
+	}
+
+	// Log networks available
+	if !quiet {
+		for name, network := range container.NetworkSettings.Networks {
+			log.Println("container", container.ID[:12], "has IP", network.IPAddress, "on network", name)
 		}
 	}
 
