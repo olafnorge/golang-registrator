@@ -236,9 +236,8 @@ func (b *Bridge) add(containerId string, quiet bool) {
 		servicePorts[key] = port
 	}
 
-	isGroup := len(servicePorts) > 1
 	for _, port := range servicePorts {
-		service := b.newService(port, isGroup)
+		service := b.newService(port)
 		if service == nil {
 			if !quiet {
 				log.Println("ignored:", container.ID[:12], "service on port", port.ExposedPort)
@@ -255,7 +254,7 @@ func (b *Bridge) add(containerId string, quiet bool) {
 	}
 }
 
-func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
+func (b *Bridge) newService(port ServicePort) *Service {
 	container := port.container
 	defaultName := strings.Replace(serviceNamePattern.ReplaceAllString(strings.TrimPrefix(container.Name, "/"), ""), "_", "-", -1)
 
@@ -275,7 +274,7 @@ func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
 		port.HostIP = b.config.HostIp
 	}
 
-	metadata, metadataFromPort := serviceMetaData(container.Config, port.ExposedPort)
+	metadata := serviceMetaData(container.Config, port.ExposedPort)
 
 	ignore := mapDefault(metadata, "ignore", "")
 	if ignore != "" {
@@ -284,11 +283,9 @@ func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
 
 	service := new(Service)
 	service.Origin = port
-	service.ID = hostname + ":" + container.Name[1:] + ":" + port.ExposedPort
 	service.Name = mapDefault(metadata, "name", defaultName)
-	if isgroup && !metadataFromPort["name"] {
-		service.Name += "-" + port.ExposedPort
-	}
+	service.ID = container.ID + ":" + service.Name + ":" + port.ExposedPort
+
 	var p int
 
 	if b.config.Internal == true {
@@ -340,6 +337,7 @@ func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
 	} else {
 		service.Tags = combineTags(
 			mapDefault(metadata, "tags", ""), b.config.ForceTags)
+		service.ID = service.ID + ":tcp"
 	}
 
 	id := mapDefault(metadata, "id", "")

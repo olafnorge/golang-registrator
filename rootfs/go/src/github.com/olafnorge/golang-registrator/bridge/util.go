@@ -55,7 +55,7 @@ func combineTags(tagParts ...string) []string {
 	return tags
 }
 
-func serviceMetaData(config *dockerapi.Config, port string) (map[string]string, map[string]bool) {
+func serviceMetaData(config *dockerapi.Config, port string) (map[string]string) {
 	meta := config.Env
 	for k, v := range config.Labels {
 		meta = append(meta, k+"="+v)
@@ -82,7 +82,7 @@ func serviceMetaData(config *dockerapi.Config, port string) (map[string]string, 
 			}
 		}
 	}
-	return metadata, metadataFromPort
+	return metadata
 }
 
 func servicePort(container *dockerapi.Container, port dockerapi.Port, published []dockerapi.PortBinding, network string, quiet bool) ServicePort {
