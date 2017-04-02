@@ -10,6 +10,16 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+## [8.0.2] - 2017-04-02
+### Fixed
+- use service IP and service port for check interpolation
+
+### Added
+
+### Removed
+
+### Changed
+
 ## [8.0.1] - 2017-04.01
 ### Fixed
 - ServiceID pattern to match pattern introduced in v8

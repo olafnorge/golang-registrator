@@ -9,6 +9,7 @@ import (
 	"github.com/olafnorge/golang-registrator/bridge"
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/hashicorp/go-cleanhttp"
+	"strconv"
 )
 
 const DefaultInterval = "10s"
@@ -21,8 +22,8 @@ func init() {
 }
 
 func (r *ConsulAdapter) interpolateService(script string, service *bridge.Service) string {
-	withIp := strings.Replace(script, "$SERVICE_IP", service.Origin.HostIP, -1)
-	withPort := strings.Replace(withIp, "$SERVICE_PORT", service.Origin.HostPort, -1)
+	withIp := strings.Replace(script, "$SERVICE_IP", service.IP, -1)
+	withPort := strings.Replace(withIp, "$SERVICE_PORT", strconv.Itoa(service.Port), -1)
 	return withPort
 }
 
