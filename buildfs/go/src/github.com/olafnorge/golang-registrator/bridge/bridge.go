@@ -274,9 +274,17 @@ func (b *Bridge) newService(port ServicePort) *Service {
 		return nil
 	}
 
+	serviceName := mapDefault(metadata, "name", "")
+	if serviceName == "" {
+		if b.config.Explicit {
+			return nil
+		}
+		serviceName = defaultName
+	}
+
 	service := new(Service)
 	service.Origin = port
-	service.Name = mapDefault(metadata, "name", defaultName)
+	service.Name = serviceName
 	service.ID = container.ID + ":" + service.Name + ":" + port.ExposedPort
 
 	var p int

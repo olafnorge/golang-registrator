@@ -1,7 +1,8 @@
-FROM alpine:3.5
+FROM alpine:3.6 as builder
 MAINTAINER Volker Machon <volker@machon.biz>
 
-COPY rootfs/ /
+ARG BUSY_BOX_VERSION=1.26.2
+COPY buildfs/ /
 
 # build and install registrator
 WORKDIR /go/src/github.com/olafnorge/golang-registrator
@@ -14,33 +15,24 @@ RUN apk add --no-cache --virtual .run-deps \
 	&& export GOPATH=/go \
   	&& git config --global http.https://gopkg.in.followRedirects true \
 	&& go get \
-	&& go build -ldflags "-X main.Version=$(cat VERSION)" -o /bin/registrator \
-	&& rm -rf /go \
-	&& apk del --purge .go-build-deps
-
-# build and install minimalistic busybox
-ARG BUSY_BOX_VERSION=1.26.2
-WORKDIR /tmp
-RUN [ $(getent group registrator) ] || addgroup -S registrator \
-    && [ $(getent passwd registrator) ] || adduser -S -D -G registrator registrator \
-    && apk add --no-cache --virtual .busybox-build-deps \
+	&& go build -ldflags "-X main.Version=$(cat VERSION)" -o /tmp/release/registrator \
+	&& apk add --no-cache --virtual .busybox-build-deps \
         gcc \
         make \
         musl-dev \
         ncurses-dev \
         openssl \
-    && wget -O- "https://busybox.net/downloads/busybox-${BUSY_BOX_VERSION}.tar.bz2" > busybox.tar.bz2 \
-    && tar xfj busybox.tar.bz2 \
-    && cd busybox-${BUSY_BOX_VERSION} \
-    && mv /busybox-config .config \
+    && wget -O- "https://busybox.net/downloads/busybox-${BUSY_BOX_VERSION}.tar.bz2" | tar xj --strip-components=1 -C /usr/src/busybox \
+    && cd /usr/src/busybox \
     && make \
-    && for DEL_SYM_LINK in $(/bin/busybox find / -type l | /bin/busybox grep bin); do /bin/busybox rm ${DEL_SYM_LINK}; done \
-    && for SYM_LINK in /bin/test /bin/[ /bin/[[ /bin/ps /bin/ash /bin/sh; do /bin/busybox ln -s /bin/busybox ${SYM_LINK}; done \
-    && apk del --purge .busybox-build-deps \
-    && /bin/busybox mv /tmp/busybox-${BUSY_BOX_VERSION}/busybox /bin/busybox.new \
-    && /bin/busybox rm -rf /tmp/busybox* \
-    && for DEL_USER in $(/bin/busybox grep -v registrator /etc/passwd | /bin/busybox awk -F':' '{print $1}'); do /bin/busybox deluser ${DEL_USER}; done \
-    && /bin/busybox mv /bin/busybox.new /bin/busybox
+    && mkdir -p /tmp/release \
+    && cd /tmp/release \
+    && mv /usr/src/busybox/busybox . \
+    && for SYM_LINK in test [ [[ ps ash sh; do ln -s busybox ${SYM_LINK}; done
+
+FROM alpine:3.6
+COPY --from=builder /tmp/release/* /bin/
+COPY rootfs/ /
 
 WORKDIR /
 USER registrator

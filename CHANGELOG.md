@@ -10,6 +10,19 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+## [8.1.0] - 2017-10-08
+### Fixed
+
+### Added
+- added `explicit` switch in order to only register containers which have
+SERVICE_NAME label set
+
+### Removed
+
+### Changed
+- build of image makes use of dockers builder feature in order to reduce
+the size of the resulting image
+
 ## [8.0.2] - 2017-04-02
 ### Fixed
 - use service IP and service port for check interpolation
