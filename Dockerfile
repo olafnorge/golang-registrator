@@ -1,4 +1,4 @@
-FROM alpine:3.6 as builder
+FROM alpine:3.7 as builder
 MAINTAINER Volker Machon <volker@machon.biz>
 
 ARG BUSY_BOX_VERSION=1.26.2
@@ -30,7 +30,7 @@ RUN apk add --no-cache --virtual .run-deps \
     && mv /usr/src/busybox/busybox . \
     && for SYM_LINK in test [ [[ ps ash sh; do ln -s busybox ${SYM_LINK}; done
 
-FROM alpine:3.6
+FROM alpine:3.7
 COPY --from=builder /tmp/release/* /bin/
 COPY rootfs/ /
 

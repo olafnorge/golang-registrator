@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/url"
 	"os"
-	"path"
 	"regexp"
 	"strconv"
 	"strings"
@@ -230,9 +229,8 @@ func (b *Bridge) add(containerId string, quiet bool) {
 		servicePorts[key] = port
 	}
 
-	isGroup := len(servicePorts) > 1
 	for _, port := range servicePorts {
-		service := b.newService(port, isGroup)
+		service := b.newService(port)
 		if service == nil {
 			if !quiet {
 				log.Println("ignored:", container.ID[:12], "service on port", port.ExposedPort)
@@ -249,7 +247,7 @@ func (b *Bridge) add(containerId string, quiet bool) {
 	}
 }
 
-func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
+func (b *Bridge) newService(port ServicePort) *Service {
 	container := port.container
 	defaultName := strings.Replace(serviceNamePattern.ReplaceAllString(strings.TrimPrefix(container.Name, "/"), ""), "_", "-", -1)
 
@@ -288,9 +286,6 @@ func (b *Bridge) newService(port ServicePort, isgroup bool) *Service {
 	service.Origin = port
 	service.Name = serviceName
 	service.ID = container.ID + ":" + service.Name + ":" + port.ExposedPort
-	if isgroup && !metadataFromPort["name"] {
-		service.Name += "-" + port.ExposedPort
-	}
 
 	var p int
 

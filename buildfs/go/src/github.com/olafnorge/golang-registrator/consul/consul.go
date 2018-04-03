@@ -10,7 +10,6 @@ import (
 	"github.com/olafnorge/golang-registrator/bridge"
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/hashicorp/go-cleanhttp"
-	"strconv"
 )
 
 const DefaultInterval = "10s"
