@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"strings"
+	"strconv"
 	"os"
 	"github.com/olafnorge/golang-registrator/bridge"
 	consulapi "github.com/hashicorp/consul/api"
